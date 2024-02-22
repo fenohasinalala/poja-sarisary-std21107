@@ -22,31 +22,34 @@ public class PictureFileService {
   PictureService pictureService;
 
   public File getBlackAndWhiteImage(String id, byte[] file) {
-    if (file == null) {
-      throw new BadRequestException("Image file is mandatory");
-    }
-    String fileSuffix = ".jpeg";
-    String inputFilePrefix = id + fileSuffix;
-    String outputFilePrefix = id + "-black" + fileSuffix;
-    File originalTmpFile;
-    File outputTmpFile;
     try {
-      originalTmpFile = File.createTempFile(inputFilePrefix, fileSuffix);
-      outputTmpFile = File.createTempFile(outputFilePrefix, fileSuffix);
-    } catch (IOException e) {
-      throw new RuntimeException("Creation of temp file failed");
-    }
-    writeFileFromByteArray(file, originalTmpFile);
+      if (file == null) {
+        throw new BadRequestException("Image file is mandatory");
+      }
+      String fileSuffix = ".jpeg";
+      String inputFilePrefix = id + fileSuffix;
+      String outputFilePrefix = id + "-black" + fileSuffix;
+      File originalTmpFile;
+      File outputTmpFile;
+      try {
+        originalTmpFile = File.createTempFile(inputFilePrefix, fileSuffix);
+        outputTmpFile = File.createTempFile(outputFilePrefix, fileSuffix);
+      } catch (IOException e) {
+        throw new RuntimeException("Creation of temp file failed");
+      }
+      writeFileFromByteArray(file, originalTmpFile);
 
-    File blackImageFile = convertImageToBlackAndWhite(originalTmpFile, outputTmpFile);
-    String originalBucketKey = getImageBucketName(inputFilePrefix);
-    String blackBucketKey = getImageBucketName(outputFilePrefix);
-    uploadImageFile(originalTmpFile, originalBucketKey);
-    uploadImageFile(blackImageFile, blackBucketKey);
-    Picture toSave = new Picture(id, originalBucketKey, blackBucketKey, null, null);
-    pictureService.save(toSave);
-    return bucketComponent.download(blackBucketKey);
-    // return bucketComponent.presign(blackBucketKey, Duration.ofHours(1)).toString();
+      File blackImageFile = convertImageToBlackAndWhite(originalTmpFile, outputTmpFile);
+      String originalBucketKey = getImageBucketName(inputFilePrefix);
+      String blackBucketKey = getImageBucketName(outputFilePrefix);
+      uploadImageFile(originalTmpFile, originalBucketKey);
+      uploadImageFile(blackImageFile, blackBucketKey);
+      Picture toSave = new Picture(id, originalBucketKey, blackBucketKey, null, null);
+      pictureService.save(toSave);
+      return bucketComponent.download(blackBucketKey);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   private File convertImageToBlackAndWhite(File originalFile, File outputFile) {
@@ -73,12 +76,16 @@ public class PictureFileService {
   }
 
   public RestPicture getRestPicture(Picture picture) {
-    RestPicture restPicture = new RestPicture();
-    restPicture.setOriginal_url(
-        bucketComponent.presign(picture.getOriginalBucketKey(), Duration.ofHours(12)).toString());
-    restPicture.setTransformed_url(
-        bucketComponent.presign(picture.getBlackBucketKey(), Duration.ofHours(12)).toString());
-    return restPicture;
+    try {
+      RestPicture restPicture = new RestPicture();
+      restPicture.setOriginal_url(
+          bucketComponent.presign(picture.getOriginalBucketKey(), Duration.ofHours(12)).toString());
+      restPicture.setTransformed_url(
+          bucketComponent.presign(picture.getBlackBucketKey(), Duration.ofHours(12)).toString());
+      return restPicture;
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   private File writeFileFromByteArray(byte[] bytes, File file) {

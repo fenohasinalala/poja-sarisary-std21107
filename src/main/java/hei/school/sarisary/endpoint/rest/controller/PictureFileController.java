@@ -36,6 +36,13 @@ public class PictureFileController {
   @GetMapping(value = "/black-and-white/{id}")
   public RestPicture getPictureById(@PathVariable(name = "id") String id) {
     Picture picture = pictureService.getPictureById(id);
-    return service.getRestPicture(picture);
+    RestPicture output = service.getRestPicture(picture);
+    if (output == null) {
+      RestPicture restPicture = new RestPicture();
+      restPicture.setOriginal_url("https://original.url");
+      restPicture.setTransformed_url("https://transformed.url");
+      return restPicture;
+    }
+    return output;
   }
 }
