@@ -1,6 +1,5 @@
 package hei.school.sarisary.service;
 
-import hei.school.sarisary.model.exception.NotFoundException;
 import hei.school.sarisary.repository.PictureRepository;
 import hei.school.sarisary.repository.model.Picture;
 import jakarta.transaction.Transactional;
@@ -18,8 +17,6 @@ public class PictureService {
   }
 
   public Picture getPictureById(String id) {
-    return repository
-        .findById(id)
-        .orElseThrow(() -> new NotFoundException("Picture with id " + id + " not found"));
+    return repository.findById(id).orElse(null);
   }
 }
