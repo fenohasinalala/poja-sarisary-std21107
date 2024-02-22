@@ -74,10 +74,9 @@ public class PictureFileService {
 
   public RestPicture getRestPicture(Picture picture) {
     RestPicture restPicture = new RestPicture();
-    restPicture.setId(picture.getId());
-    restPicture.setOriginalPictureUrl(
+    restPicture.setOriginal_url(
         bucketComponent.presign(picture.getOriginalBucketKey(), Duration.ofHours(12)).toString());
-    restPicture.setBlackPictureUrl(
+    restPicture.setTransformed_url(
         bucketComponent.presign(picture.getBlackBucketKey(), Duration.ofHours(12)).toString());
     return restPicture;
   }

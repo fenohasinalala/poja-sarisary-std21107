@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RestPicture {
-  private String id;
-  private String originalPictureUrl;
-  private String blackPictureUrl;
+  private String original_url;
+  private String transformed_url;
 }
